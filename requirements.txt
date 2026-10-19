@@ -1,0 +1,10 @@
+# Core (Phase 5 dashboard, Option A)
+Flask>=3.0
+
+# Dashboard upgrades (Command Centre, optional)
+# Flask-SocketIO>=5.3
+# Flask-Login>=0.6
+
+# Automation (optional network upgrades)
+# netmiko>=4.3
+# scapy>=2.5
