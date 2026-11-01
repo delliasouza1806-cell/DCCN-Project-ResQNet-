@@ -16,7 +16,7 @@ Fill in before Phase 1. Merge roles if the team is smaller than four.
 
 | Role | Owns | Name | Roll no. |
 |------|------|------|----------|
-| Network lead | Topology, addressing, routers, OSPF | | |
+| Network lead | Topology, addressing, routers, OSPF | Harsh Raikar | |
 | Services and security lead | DHCP, DNS, HTTP portal, VLANs, ACLs | | |
 | Dashboard developer | Flask app, test scripts, twin network | | |
 | Testing and documentation lead | Experiments, Wireshark, synopsis, report, demo | | |

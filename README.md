@@ -42,7 +42,7 @@ measured, not assumed.
 | Phase | Weeks | Status |
 |-------|-------|--------|
 | 0. Team, tools, setup | 1 | Scaffold ready, see `docs/PHASE0.md` |
-| 1. Requirements and design | 1-2 | Not started |
+| 1. Requirements and design | 1-2 | Complete, see `docs/PHASE1.md` |
 | 2. Core network in Packet Tracer | 2-3 | Not started |
 | 3. Services and security | 3-4 | Not started |
 | 4. Failure and recovery experiments | 4-5 | Not started |
