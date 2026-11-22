@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResQNet - Emergency Response Network Command Centre</title>
+    <!-- Modern Google Font & Font Awesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN for live analytical graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+        <div class="brand">
+            <div class="logo-badge">
+                <span class="pulse-dot"></span>
+                <span class="logo-text">ResQNet</span>
+            </div>
+            <div class="sub-brand">
+                <span class="project-title">Dynamic Routing Emergency Network</span>
+                <span class="project-tag">DCCN CMP-303 • Phase 5 Command Centre</span>
+            </div>
+        </div>
+
+        <div class="nav-controls">
+            <div class="status-indicator" id="network-health-badge">
+                <span class="dot"></span>
+                <span id="health-text">NETWORK OPERATIONAL</span>
+            </div>
+            <div class="time-display" id="clock-display">00:00:00</div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- KPI Metrics Ribbon -->
+        <section class="kpi-ribbon">
+            <div class="kpi-card">
+                <div class="kpi-title">Monitored Sites</div>
+                <div class="kpi-value" id="kpi-sites">6 / 6</div>
+                <div class="kpi-sub">1 Core Switch, 5 Edge Routers</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Primary WAN Links</div>
+                <div class="kpi-value positive" id="kpi-primary-links">5 / 5 UP</div>
+                <div class="kpi-sub">Cost 1 • Subnets 172.16.0.0/30</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Redundant Backup Links</div>
+                <div class="kpi-value highlight" id="kpi-backup-links">2 STANDBY</div>
+                <div class="kpi-sub">H1-H2 & H3-CTRL (Cost 50)</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Avg OSPF Recovery Time</div>
+                <div class="kpi-value accent" id="kpi-recovery">0.8s – 1.0s</div>
+                <div class="kpi-sub">Tuned vs Default Timers</div>
+            </div>
+        </section>
+
+        <!-- Dynamic Topology & Failure Simulator Grid -->
+        <div class="grid-2-col">
+            <!-- Topology Map Visualization -->
+            <div class="panel topology-panel">
+                <div class="panel-header">
+                    <h2>Live Topology & Routing Path</h2>
+                    <span class="badge" id="active-scenario-tag">SCENARIO: NORMAL</span>
+                </div>
+                <div class="panel-body">
+                    <div class="active-path-banner">
+                        <span class="path-label">Active H1 Path:</span>
+                        <span class="path-val" id="active-path-text">H1 → CORE → CTRL (Primary Metric 2)</span>
+                    </div>
+
+                    <!-- Interactive SVG Topology Visualizer -->
+                    <div class="topology-canvas-container">
+                        <svg id="topology-svg" viewBox="0 0 760 480" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Background Grid -->
+                            <defs>
+                                <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+                                    <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                                </pattern>
+                                <linearGradient id="primary-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#10b981" />
+                                    <stop offset="100%" stop-color="#059669" />
+                                </linearGradient>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#grid)" />
+
+                            <!-- Links (Lines) -->
+                            <!-- Backup Links -->
+                            <line id="link-H1-H2" class="topo-link backup" x1="160" y1="120" x2="160" y2="360" />
+                            <line id="link-H3-CTRL" class="topo-link backup" x1="600" y1="360" x2="600" y2="120" />
+
+                            <!-- Primary Links to CORE (380, 240) -->
+                            <line id="link-CORE-H1" class="topo-link primary" x1="380" y1="240" x2="160" y2="120" />
+                            <line id="link-CORE-H2" class="topo-link primary" x1="380" y1="240" x2="160" y2="360" />
+                            <line id="link-CORE-CTRL" class="topo-link primary" x1="380" y1="240" x2="600" y2="120" />
+                            <line id="link-CORE-H3" class="topo-link primary" x1="380" y1="240" x2="600" y2="360" />
+                            <line id="link-CORE-AMB" class="topo-link primary" x1="380" y1="240" x2="380" y2="430" />
+
+                            <!-- Link Labels -->
+                            <text x="250" y="170" class="link-label">Fa0/1 (Cost 1)</text>
+                            <text x="250" y="315" class="link-label">Fa0/2 (Cost 1)</text>
+                            <text x="510" y="170" class="link-label">Fa0/4 (Cost 1)</text>
+                            <text x="510" y="315" class="link-label">Fa0/3 (Cost 1)</text>
+                            <text x="390" y="340" class="link-label">Fa0/5 (Cost 1)</text>
+                            <text x="100" y="240" class="link-label backup-label">H1-H2 Backup (Cost 50)</text>
+                            <text x="615" y="240" class="link-label backup-label">H3-CTRL Backup (Cost 50)</text>
+
+                            <!-- Nodes (Devices) -->
+                            <!-- Central Core R-CORE -->
+                            <g id="node-CORE" class="topo-node central" transform="translate(380, 240)">
+                                <circle r="36" class="node-circle core-circle" />
+                                <text y="-4" class="node-title">R-CORE</text>
+                                <text y="14" class="node-sub">Switch 3560</text>
+                            </g>
+
+                            <!-- Hospital 1 (North) -->
+                            <g id="node-H1" class="topo-node" transform="translate(160, 120)">
+                                <circle r="30" class="node-circle" />
+                                <text y="-4" class="node-title">R-H1</text>
+                                <text y="12" class="node-sub">Hosp 1 (Mapusa)</text>
+                            </g>
+
+                            <!-- Hospital 2 (GMC) -->
+                            <g id="node-H2" class="topo-node" transform="translate(160, 360)">
+                                <circle r="30" class="node-circle" />
+                                <text y="-4" class="node-title">R-H2</text>
+                                <text y="12" class="node-sub">Hosp 2 (GMC)</text>
+                            </g>
+
+                            <!-- Control Centre (Servers) -->
+                            <g id="node-CTRL" class="topo-node control" transform="translate(600, 120)">
+                                <circle r="32" class="node-circle ctrl-circle" />
+                                <text y="-4" class="node-title">R-CTRL</text>
+                                <text y="12" class="node-sub">Control (Panaji)</text>
+                            </g>
+
+                            <!-- Hospital 3 (South) -->
+                            <g id="node-H3" class="topo-node" transform="translate(600, 360)">
+                                <circle r="30" class="node-circle" />
+                                <text y="-4" class="node-title">R-H3</text>
+                                <text y="12" class="node-sub">Hosp 3 (Margao)</text>
+                            </g>
+
+                            <!-- Ambulance Dispatch -->
+                            <g id="node-AMB" class="topo-node" transform="translate(380, 430)">
+                                <circle r="26" class="node-circle" />
+                                <text y="-4" class="node-title">R-AMB</text>
+                                <text y="12" class="node-sub">Ambulance (Ponda)</text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="topo-legend">
+                        <div class="legend-item"><span class="legend-box up"></span> Primary Link (UP)</div>
+                        <div class="legend-item"><span class="legend-box standby"></span> Backup Standby (Cost 50)</div>
+                        <div class="legend-item"><span class="legend-box active"></span> OSPF Active Failover</div>
+                        <div class="legend-item"><span class="legend-box down"></span> Severed Link (DOWN)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Failure Simulator Controls -->
+            <div class="panel simulator-panel">
+                <div class="panel-header">
+                    <h2>Failure Simulator & Experiment Replay</h2>
+                    <span class="info-tag">Phase 4 Experiments E1 - E7</span>
+                </div>
+                <div class="panel-body">
+                    <p class="section-desc">
+                        Trigger simulated link cuts or router power failures to demonstrate dynamic OSPF convergence, Dijkstra SPF recalculation, and topological boundary limits.
+                    </p>
+
+                    <div class="simulator-actions">
+                        <button class="sim-btn btn-reset active" onclick="simulateScenario('NORMAL')">
+                            <strong>Baseline (E1)</strong>
+                            <span>Normal Path • All Links Healthy</span>
+                        </button>
+                        <button class="sim-btn btn-warning" onclick="simulateScenario('E2_CUT')">
+                            <strong>Cut CORE-H1 Link (E2)</strong>
+                            <span>Fa0/1 Down • Failover via H1-H2 Backup</span>
+                        </button>
+                        <button class="sim-btn btn-warning" onclick="simulateScenario('E3_CUT')">
+                            <strong>Cut CORE-H3 Link (E3)</strong>
+                            <span>Fa0/3 Down • Failover via H3-CTRL Backup</span>
+                        </button>
+                        <button class="sim-btn btn-danger" onclick="simulateScenario('E4_H2_OFF')">
+                            <strong>Power Off R-H2 (E4)</strong>
+                            <span>H2 Isolated • Other Sites Unaffected</span>
+                        </button>
+                        <button class="sim-btn btn-danger" onclick="simulateScenario('E5_DUAL')">
+                            <strong>Dual Link Cut (E5)</strong>
+                            <span>CORE-H1 + H1-H2 Cut • H1 Isolated (Boundary)</span>
+                        </button>
+                        <button class="sim-btn btn-danger" onclick="simulateScenario('E7_STATIC')">
+                            <strong>Static Routes Cut (E7)</strong>
+                            <span>Fa0/1 Down • 100% Drop (No Failover)</span>
+                        </button>
+                    </div>
+
+                    <!-- Live Probe Tester -->
+                    <div class="probe-box">
+                        <div class="probe-header">
+                            <h3>Live Python Probe (Layer B Utility)</h3>
+                        </div>
+                        <div class="probe-inputs">
+                            <input type="text" id="probe-ip-input" value="10.10.0.66" placeholder="Target IP (e.g. 10.10.0.66)">
+                            <button class="btn-primary" onclick="runLiveProbe()">Probe Target</button>
+                        </div>
+                        <div id="probe-output" class="probe-console">Ready to test destination reachability...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytical Charts Section (Chart.js) -->
+        <div class="grid-2-col">
+            <div class="panel chart-panel">
+                <div class="panel-header">
+                    <h2>Packet Loss Across Scenarios (Honest Data)</h2>
+                    <span class="sub-badge">Recorded 35 Runs</span>
+                </div>
+                <div class="panel-body">
+                    <canvas id="lossChart" height="240"></canvas>
+                </div>
+            </div>
+
+            <div class="panel chart-panel">
+                <div class="panel-header">
+                    <h2>Convergence & Recovery Time Comparison</h2>
+                    <span class="sub-badge">Seconds</span>
+                </div>
+                <div class="panel-body">
+                    <canvas id="recoveryChart" height="240"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Experiment Records Table (Direct from results.csv) -->
+        <div class="panel data-panel">
+            <div class="panel-header">
+                <h2>Phase 4 Measured Experiment Runs (E1 – E7)</h2>
+                <div class="filter-group">
+                    <label for="filter-exp">Filter:</label>
+                    <select id="filter-exp" onchange="filterExperimentTable()">
+                        <option value="ALL">All Experiments (35 Runs)</option>
+                        <option value="E1">E1 - Baseline</option>
+                        <option value="E2">E2 - Cut CORE-H1 (Default OSPF)</option>
+                        <option value="E3">E3 - Cut CORE-H3</option>
+                        <option value="E4">E4 - Power Off R-H2</option>
+                        <option value="E5">E5 - Dual Link Failure</option>
+                        <option value="E6">E6 - Cut CORE-H1 (Tuned Timers)</option>
+                        <option value="E7">E7 - Static Routing Baseline</option>
+                    </select>
+                </div>
+            </div>
+            <div class="panel-body table-responsive">
+                <table class="data-table" id="experiments-table">
+                    <thead>
+                        <tr>
+                            <th>Exp</th>
+                            <th>Scenario Name</th>
+                            <th>Run</th>
+                            <th>Source → Target</th>
+                            <th>Failure Applied</th>
+                            <th>Pings Lost</th>
+                            <th>Loss %</th>
+                            <th>Recovery</th>
+                            <th>Path After Failure</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Populated by app.js -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Event Log Console -->
+        <div class="panel log-panel">
+            <div class="panel-header">
+                <h2>Real-Time Network Event Log</h2>
+                <button class="btn-refresh" onclick="refreshEvents()">Refresh Logs</button>
+            </div>
+            <div class="panel-body">
+                <div class="terminal-window" id="event-terminal">
+                    <!-- Events populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>ResQNet DCCN Lab Project (CMP-303) • Phase 5 Dashboard • Built for Cisco Packet Tracer & Linux Measured Twin</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

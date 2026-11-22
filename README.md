@@ -22,7 +22,7 @@ measured, not assumed.
 | `pkt/` | Packet Tracer files, versioned: `resqnet_v1.pkt`, `resqnet_v2.pkt`, ... |
 | `configs/` | Router and switch running-configs saved as text after every phase |
 | `scripts/` | Test scripts, twin network scripts, environment checker |
-| `dashboard/` | Flask app (`app.py`, `probe.py`, `templates/`, `static/`) |
+| `dashboard/` | Flask app (`app.py`, `probe.py`, `templates/`, `static/`, `results.csv`) |
 | `captures/` | Wireshark `.pcapng` captures and screenshots |
 | `docs/` | Phase documentation, synopsis, final report, demo script |
 
@@ -41,13 +41,13 @@ measured, not assumed.
 
 | Phase | Weeks | Status |
 |-------|-------|--------|
-| 0. Team, tools, setup | 1 | Scaffold ready, see `docs/PHASE0.md` |
+| 0. Team, tools, setup | 1 | Complete, see `docs/PHASE0.md` |
 | 1. Requirements and design | 1-2 | Complete, see `docs/PHASE1.md` |
-| 2. Core network in Packet Tracer | 2-3 | Not started |
-| 3. Services and security | 3-4 | Not started |
-| 4. Failure and recovery experiments | 4-5 | Not started |
-| 5. Dashboard and measured twin | 5-6 | Not started |
-| 6. Packet analysis, documentation, demo | 6 | Not started |
+| 2. Core network in Packet Tracer | 2-3 | Complete, see `pkt/resqnet_v4.pkt` |
+| 3. Services and security | 3-4 | Complete, see `pkt/resqnet_v5.pkt` |
+| 4. Failure and recovery experiments | 4-5 | Complete, see `docs/ResQNet - Implementation Report (OSPF to Phase 4).docx` |
+| 5. Dashboard and measured twin | 5-6 | Complete, see `docs/PHASE5.md` & `dashboard/` |
+| 6. Packet analysis, documentation, demo | 6 | In progress |
 
 ## Honesty rules
 
